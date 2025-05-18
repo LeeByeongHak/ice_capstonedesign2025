@@ -156,6 +156,7 @@
     let currentUser = localStorage.getItem('currentUser') || 'unknown';
     const isAdmin = currentUser === 'admin';
     let seatReservations = JSON.parse(localStorage.getItem('seatReservations')) || {};
+    const ESP8266_IP = "http://192.168.0.17/";
 
     function showRoom(roomId) {
       console.log(`Showing room: ${roomId}`);
