@@ -4,16 +4,23 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>도서관 좌석 현황</title>
+  <!-- Google Fonts -->
   <link href="https://fonts.googleapis.com/css2?family=Black+Han+Sans&display=swap" rel="stylesheet">
+  <!-- Tailwind CSS -->
   <script src="https://cdn.tailwindcss.com"></script>
   <style>
+    /* Global Styles */
     body {
-  font-family: 'Black Han Sans', sans-serif;
+      font-family: 'Black Han Sans', sans-serif;
     }
+
+    /* Button Styles */
     .active-btn {
       background-color: #2563eb !important;
       color: white !important;
     }
+
+    /* Seat Styles */
     .selected-seat {
       background-color: #2563eb !important;
       color: white !important;
@@ -39,6 +46,8 @@
     .seat-container .text-sm {
       font-size: 0.65rem;
     }
+
+    /* Modal Styles */
     .modal-overlay {
       position: fixed;
       top: 0;
@@ -92,26 +101,32 @@
     .hidden {
       display: none;
     }
-    /* Custom spacing for rooms 1-4 */
-    #room1 .seat-container, #room2 .seat-container, #room3 .seat-container, #room4 .seat-container {
-      /*gap-x-2; /* Remove horizontal gap */s
-      /*gap-y-3; /* Keep vertical gap */ 
+
+    /* Room-specific Spacing */
+    #room1 .seat-container,
+    #room2 .seat-container,
+    #room3 .seat-container,
+    #room4 .seat-container {
       gap: 5rem 0.25rem;
     }
   </style>
 </head>
 <body class="bg-gray-100 text-gray-800 p-4">
   <div class="max-w-4xl mx-auto">
-    <h1 class="text-2xl font-family mb-4 flex items-center gap-2"> 열람실 좌석 현황</h1>
+    <!-- Header -->
+    <h1 class="text-2xl font-family mb-4 flex items-center gap-2">열람실 좌석 현황</h1>
 
+    <!-- User Info -->
     <div class="mb-4">
       <p id="current-user" class="text-lg">현재 사용자 아이디: 로딩 중...</p>
     </div>
 
+    <!-- Available Seats -->
     <div class="mb-4">
       <p id="available-seats" class="text-lg">남은 자리: 로딩 중...</p>
     </div>
 
+    <!-- Room Selection Buttons -->
     <div class="flex space-x-2 mb-4">
       <button onclick="showRoom('room1')" class="px-4 py-2 bg-white border rounded shadow hover:bg-blue-100 active-btn" id="btn-room1">
         제1자유열람실A
@@ -125,21 +140,29 @@
       <button onclick="showRoom('room4')" class="px-4 py-2 bg-white border rounded shadow hover:bg-blue-100" id="btn-room4">
         제2자유열람실B
       </button>
-      <button onclick="showRoom('room5')" class="px-4 py-2 bg-white border rounded shadow hover:bg-blue-100" id="btn-room4">
+      <button onclick="showRoom('room5')" class="px-4 py-2 bg-white border rounded shadow hover:bg-blue-100" id="btn-room5">
         메인스퀘어
       </button>
     </div>
-      
-    
 
-    <div id="room1" class="room"><div class="grid grid-cols-8 gap-1 seat-container"></div></div>
-    <div id="room2" class="room hidden"><div class="grid grid-cols-8 gap-1 seat-container"></div></div>
-    <div id="room3" class="room hidden"><div class="grid grid-cols-8 gap-1 seat-container"></div></div>
-    <div id="room4" class="room hidden"><div class="grid grid-cols-8 gap-1 seat-container"></div></div>
-    <div id="room5" class="room hidden"><div class="grid grid-cols-6 gap-2  seat-container"></div></div>
-    
+    <!-- Room Containers -->
+    <div id="room1" class="room">
+      <div class="grid grid-cols-8 gap-1 seat-container"></div>
+    </div>
+    <div id="room2" class="room hidden">
+      <div class="grid grid-cols-8 gap-1 seat-container"></div>
+    </div>
+    <div id="room3" class="room hidden">
+      <div class="grid grid-cols-8 gap-1 seat-container"></div>
+    </div>
+    <div id="room4" class="room hidden">
+      <div class="grid grid-cols-8 gap-1 seat-container"></div>
+    </div>
+    <div id="room5" class="room hidden">
+      <div class="grid grid-cols-6 gap-2 seat-container"></div>
+    </div>
 
-    <!-- 커스텀 모달 -->
+    <!-- Custom Modal -->
     <div id="custom-modal" class="modal-overlay" style="display: none;">
       <div class="modal-content">
         <div id="modal-message" class="modal-message"></div>
@@ -150,22 +173,26 @@
         </div>
       </div>
     </div>
+  </div>
 
   <script>
+    // Global Variables
     const seatTimers = {};
     let currentUser = localStorage.getItem('currentUser') || 'unknown';
     const isAdmin = currentUser === 'admin';
     let seatReservations = JSON.parse(localStorage.getItem('seatReservations')) || {};
-    const ESP8266_IP = "http://192.168.0.17/";
+    const ESP8266_IP = "https://YOUR_NGROK_URL"; // 예: https://abc123.ngrok.io (HTTP 사용 시 Mixed Content 오류 주의)
 
+    // Show specific room
     function showRoom(roomId) {
       console.log(`Showing room: ${roomId}`);
       document.querySelectorAll('.room').forEach(el => el.classList.add('hidden'));
       document.getElementById(roomId).classList.remove('hidden');
       document.querySelectorAll('button[id^="btn-"]').forEach(btn => btn.classList.remove('active-btn'));
-      document.getElementById('btn-' + roomId).classList.add('active-btn');
+      document.getElementById(`btn-${roomId}`).classList.add('active-btn');
     }
 
+    // Update available seats count
     function updateAvailableSeats() {
       const totalSeats = 342;
       const reservedSeats = Object.keys(seatReservations).length;
@@ -173,6 +200,7 @@
       console.log(`Available seats updated: ${totalSeats - reservedSeats}/${totalSeats}`);
     }
 
+    // Display custom modal for seat actions
     function showCustomModal(message, showExtend, onExtend, onReturn) {
       const modal = document.getElementById('custom-modal');
       const modalMessage = document.getElementById('modal-message');
@@ -191,12 +219,7 @@
       });
 
       modal.style.display = 'flex';
-
-      if (showExtend) {
-        extendBtn.classList.remove('hidden');
-      } else {
-        extendBtn.classList.add('hidden');
-      }
+      extendBtn.classList.toggle('hidden', !showExtend);
 
       extendBtn.onclick = () => {
         onExtend();
@@ -211,6 +234,39 @@
       };
     }
 
+    // Send seat reservation to ESP8266
+    function sendReservationToServer(seatNum) {
+      console.log("Sending request for seatNum:", seatNum);
+      const xhr = new XMLHttpRequest();
+      xhr.open('POST', `${ESP8266_IP}/update-seat`, true);
+      xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+      xhr.onreadystatechange = function () {
+        if (xhr.readyState === 4) {
+          console.log("Response status:", xhr.status, "Response text:", xhr.responseText);
+          if (xhr.status === 200) {
+            try {
+              const response = JSON.parse(xhr.responseText);
+              if (response.seatId && response.newExpiry) {
+                seatReservations[response.seatId].expiry = response.newExpiry;
+                localStorage.setItem('seatReservations', JSON.stringify(seatReservations));
+                console.log(`Updated seat ${response.seatId}: ${response.status}`);
+              } else {
+                console.error("Invalid response format:", response);
+              }
+            } catch (e) {
+              console.error("JSON parse error:", e, "Response:", xhr.responseText);
+            }
+          } else {
+            console.error('ESP8266 request failed:', xhr.status, xhr.responseText);
+          }
+        }
+      };
+      const body = `seatId=${encodeURIComponent(seatNum)}`;
+      console.log("Request body:", body);
+      xhr.send(body);
+    }
+
+    // Create seats for a room
     function createSeats(roomId) {
       const container = document.querySelector(`#${roomId} .seat-container`);
       if (!container) {
@@ -220,53 +276,33 @@
       container.innerHTML = '';
       console.log(`Creating seats for room: ${roomId}`);
 
-      // Base seat numbers for each room
       const baseNumbers = {
-        'room1': 1,  // 제1자유열람실A: Start at 1
-        'room2': 73, // 제1자유열람실B: Start at 49
-        'room3': 1,  // 제2자유열람실A: Start at 1
-        'room4': 73, // 제2자유열람실B: Start at 49
-        'room5': 1   // 메인스퀘어: Start at 1
+        'room1': 1,   // 제1자유열람실A: 1~72
+        'room2': 73,  // 제1자유열람실B: 73~144
+        'room3': 145, // 제2자유열람실A: 145~216
+        'room4': 217, // 제2자유열람실B: 217~288
+        'room5': 289  // 메인스퀘어: 289~342
       };
       const startNumber = baseNumbers[roomId];
 
-      // Determine number of columns based on room
-      const cols = (roomId === 'room5') ? 6 : 8; // 6 columns for 메인스퀘어, 8 columns for others
-      const rows = 9; // 6 rows for all rooms
-      const totalSeats = rows * cols;
+      const cols = roomId === 'room5' ? 6 : 8;
+      const rows = 9;
 
-      // Create seats in a Nx6 grid (N columns, 6 rows)
       for (let row = 0; row < rows; row++) {
         for (let col = 0; col < cols; col++) {
-          const seatIndex = col * rows + row + 1; // Vertical numbering: increment down columns
+          const seatIndex = col * rows + row + 1;
           const seatNum = `${roomId}-seat${seatIndex}`;
-          const seatNumber = startNumber + (seatIndex - 1); // Adjust seat number based on starting point
+          const seatNumber = startNumber + (seatIndex - 1);
           const reservation = seatReservations[seatNum];
 
           const seat = document.createElement('div');
-          if (row === 0) {
-            seat.style.marginBottom = '30px';
-          }
-          if (row === 2) {
-            seat.style.marginBottom = '5px';
-          }
-          if (row === 4) {
-            seat.style.marginBottom = '30px';
-          }
-          if (row === 6) {
-            seat.style.marginBottom = '5px';
-          }
-          if (col === 1) {
-            seat.style.marginLeft = '-55px';  // 원하는 만큼 간격 줄이기
-          }
-          if (col === 3) {
-            seat.style.marginLeft = '-55px';  // 원하는 만큼 간격 줄이기
-          }
-          if (col === 5) {
-            seat.style.marginLeft = '-55px';  // 원하는 만큼 간격 줄이기
-          }
-          if (col === 7) {
-            seat.style.marginLeft = '-55px';  // 원하는 만큼 간격 줄이기
+          // Seat spacing
+          if (row === 0) seat.style.marginBottom = '30px';
+          if (row === 2) seat.style.marginBottom = '5px';
+          if (row === 4) seat.style.marginBottom = '30px';
+          if (row === 6) seat.style.marginBottom = '5px';
+          if (col === 1 || col === 3 || col === 5 || col === 7) {
+            seat.style.marginLeft = '-55px';
           }
 
           const clickHandler = () => {
@@ -282,41 +318,27 @@
                 message = `좌석을 반납하시겠습니까?\n\n현재 사용자 아이디: ${currentUser}`;
               }
 
-              if (remaining <= 10 && extendCount < 4 && !isAdmin) {
-                showCustomModal(
-                  message,
-                  true,
-                  () => {
-                    clearTimers(seatNum);
-                    currentReservation.expiry = Date.now() + 60000;
-                    currentReservation.extendCount = extendCount + 1;
-                    seatReservations[seatNum] = currentReservation;
-                    localStorage.setItem('seatReservations', JSON.stringify(seatReservations));
-                    createSeats(roomId);
-                    updateAvailableSeats();
-                  },
-                  () => {
-                    clearTimers(seatNum);
-                    delete seatReservations[seatNum];
-                    localStorage.setItem('seatReservations', JSON.stringify(seatReservations));
-                    updateAvailableSeats();
-                    createSeats(roomId);
-                  }
-                );
-              } else {
-                showCustomModal(
-                  message,
-                  false,
-                  () => {},
-                  () => {
-                    clearTimers(seatNum);
-                    delete seatReservations[seatNum];
-                    localStorage.setItem('seatReservations', JSON.stringify(seatReservations));
-                    updateAvailableSeats();
-                    createSeats(roomId);
-                  }
-                );
-              }
+              showCustomModal(
+                message,
+                remaining <= 10 && extendCount < 4 && !isAdmin,
+                () => {
+                  clearTimers(seatNum);
+                  currentReservation.expiry = Date.now() + 60000;
+                  currentReservation.extendCount = extendCount + 1;
+                  seatReservations[seatNum] = currentReservation;
+                  localStorage.setItem('seatReservations', JSON.stringify(seatReservations));
+                  sendReservationToServer(seatNum);
+                  createSeats(roomId);
+                  updateAvailableSeats();
+                },
+                () => {
+                  clearTimers(seatNum);
+                  delete seatReservations[seatNum];
+                  localStorage.setItem('seatReservations', JSON.stringify(seatReservations));
+                  updateAvailableSeats();
+                  createSeats(roomId);
+                }
+              );
             } else if (isAdmin) {
               showCustomModal(
                 `관리자: 좌석을 해제하시겠습니까?\n\n현재 사용자 아이디: ${currentUser}`,
@@ -354,6 +376,7 @@
 
             seatTimers[seatNum] = { interval };
             seat.addEventListener('click', clickHandler);
+            sendReservationToServer(seatNum);
             console.log(`Created reserved seat: ${seatNum} (Number: ${seatNumber})`);
           } else {
             seat.className = 'empty-seat rounded text-center cursor-pointer hover:bg-gray-400';
@@ -412,6 +435,7 @@
               seatTimers[seatNum] = { interval, timeout };
               seatReservations[seatNum] = { user: currentUser, expiry, extendCount: 0 };
               localStorage.setItem('seatReservations', JSON.stringify(seatReservations));
+              sendReservationToServer(seatNum);
               updateAvailableSeats();
               console.log(`Reserved seat: ${seatNum} (Number: ${seatNumber}) by ${currentUser}`);
             });
@@ -423,6 +447,7 @@
       }
     }
 
+    // Clear timers for a seat
     function clearTimers(seatNum) {
       if (seatTimers[seatNum]) {
         clearInterval(seatTimers[seatNum].interval);
@@ -432,11 +457,13 @@
       }
     }
 
+    // Display current user info
     function displayUserInfo() {
       document.getElementById('current-user').textContent = `현재 사용자 아이디: ${currentUser}`;
       console.log(`Displayed user info: ${currentUser}`);
     }
 
+    // Initialize page
     document.addEventListener('DOMContentLoaded', () => {
       console.log('DOMContentLoaded event fired');
       if (!localStorage.getItem('currentUser')) {
